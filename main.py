@@ -1,4 +1,5 @@
 from yaml_dag_reader import YamlDagReader
+from display_okamu import display_scheduling
 
 from dag import DAG
 from scheduler import Scheduler
@@ -17,18 +18,7 @@ scheduler.scheduling()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-# outputs
+### outputs ###
 # dag info
 for i, node in enumerate(dag.nodes):
     print("idx: "+str(i)+", ST: "+str(node.ST)+", FT: "+str(node.FT)+", core: "+str(node.core))
@@ -37,16 +27,4 @@ for i, node in enumerate(dag.nodes):
 print(dag.makespan)
 
 # scheduling
-sched = []
-for i in range(core_num):
-    s = []
-    for j in range(dag.makespan):
-        s.append("-")
-    sched.append(s)
-
-for i, node in enumerate(dag.nodes):
-    for j in range(node.ST, node.FT):
-        sched[node.core][j] = str(i)
-
-for s in sched:
-    print("".join(s))
+display_scheduling(core_num, dag)
