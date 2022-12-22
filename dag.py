@@ -56,7 +56,13 @@ class DAG:
 
         # member
         self._deadline = deadline
-        self.culc_laxity()
+        self.__culc_laxity()
+        self._c_path = self.__culc_c_path()
+
+    # return index list [1, ..., n]
+    @property
+    def c_path(self) -> list[int]:
+        return self._c_path
 
     def predecessors(self, n: int) -> list[int]:
         return list(self.G.predecessors(n))
@@ -86,7 +92,7 @@ class DAG:
                 m = n.FT
         return m
 
-    def culc_laxity(self):
+    def __culc_laxity(self):
         def culc(n: int, l: int):
             self.nodes[n].laxity = l
             for s in list(self.G.predecessors(n)):
@@ -98,3 +104,20 @@ class DAG:
     @property
     def nodes(self):
         return self._nodes
+
+
+    def __culc_c_path(self) -> list[int]:
+        cp = []
+        length = 0
+        for s in self.src:
+            for d in self.snk:
+                for path in list(networkx.all_simple_paths(self.G, s, d)):
+                    print(path)
+                    tmp_length = sum([self.nodes[n].c for n in path])
+                    print(tmp_length)
+                    print("===")
+                    if tmp_length > length:
+                        cp = path
+                        length = tmp_length
+        print(cp)
+        return cp
