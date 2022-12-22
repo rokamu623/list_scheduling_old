@@ -112,12 +112,9 @@ class DAG:
         for s in self.src:
             for d in self.snk:
                 for path in list(networkx.all_simple_paths(self.G, s, d)):
-                    print(path)
                     tmp_length = sum([self.nodes[n].c for n in path])
-                    print(tmp_length)
-                    print("===")
                     if tmp_length > length:
                         cp = path
                         length = tmp_length
-        print(cp)
+
         return cp
