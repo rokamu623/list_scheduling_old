@@ -9,6 +9,7 @@ class Node:
         self._st = None
         self._core = None
         self._laxity = 0
+        self._p = -1
 
     @property
     def c(self) -> int:
@@ -46,6 +47,14 @@ class Node:
     def laxity(self, n: int):
         self._laxity = n
 
+    @property
+    def p(self) -> int:
+        return self._p
+
+    @p.setter
+    def p(self, n: int):
+        self._p = n
+
 class DAG:
     def __init__(self, weights: list[int], edges: list[(int, int)], deadline: int):
         # DiGraph
@@ -56,8 +65,8 @@ class DAG:
 
         # member
         self._deadline = deadline
-        self.__culc_laxity()
-        self._c_path = self.__culc_c_path()
+        self._culc_laxity()
+        self._c_path = self._culc_c_path()
 
     # return index list [1, ..., n]
     @property
@@ -92,7 +101,7 @@ class DAG:
                 m = n.FT
         return m
 
-    def __culc_laxity(self):
+    def _culc_laxity(self):
         def culc(n: int, l: int):
             self.nodes[n].laxity = l
             for s in list(self.G.predecessors(n)):
@@ -106,7 +115,7 @@ class DAG:
         return self._nodes
 
 
-    def __culc_c_path(self) -> list[int]:
+    def _culc_c_path(self) -> list[int]:
         cp = []
         length = 0
         for s in self.src:
