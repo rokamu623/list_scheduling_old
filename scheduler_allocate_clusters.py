@@ -1,6 +1,6 @@
 from numpy import argmin
 
-from dag import DAG
+from dag import DAG, Node
 from scheduler import Scheduler
 
 from amdahl import amdahl
@@ -13,9 +13,30 @@ class SchedulerAllocateClusters(Scheduler):
 
         assert core_num % CORE_NUM_IN_CLUSTER == 0
         self._core_clusters = [[cc*CORE_NUM_IN_CLUSTER+c for c in range(CORE_NUM_IN_CLUSTER)] for cc in range(int(core_num/CORE_NUM_IN_CLUSTER))]
+        self._cluster_num = len(self._core_clusters)
 
         self._priority_queue = []
         self._sim_time = 0
+
+    def aaa(self):
+        self.__select_core()
+
+    # get fastest free core
+    def __select_core(self) -> tuple([int, int]):
+        # find node latest finish for each core
+        ft = [[0 for _ in range(CORE_NUM_IN_CLUSTER)] for _ in range(self._cluster_num)]
+        for node in [node for node in self._dag.nodes if node.core is not None]:
+            for cc in range(self._cluster_num):
+                for c in range(CORE_NUM_IN_CLUSTER):
+                    core_idx = 16 * cc + c
+                    if core_idx in node.core and node.FT is not None and ft[cc][c] < node.FT:
+                        ft[cc][c] = node.FT
+
+        # # get fastest free core
+        # selected_core = int(argmin(ft))
+        # core_avail_time = min(ft)
+
+        # return selected_core, core_avail_time
 
     def scheduling(self):
         # initialize by src nodes
@@ -64,4 +85,13 @@ class SchedulerAllocateClusters(Scheduler):
                     if len(ft) > 0:
                         self._sim_time = min(ft)
 
-dag = SchedulerAllocateClusters(DAG([], [], 0), 80)
+dag = DAG([], [], 0)
+node0 = Node(10)
+node0.FT = 20
+node0.core = [i for i in range(16)]
+node1 = Node(20)
+node1.FT = 30
+node1.core = [i+32 for i in range(16)]
+dag._nodes = [node0, node1]
+scheduler = SchedulerAllocateClusters(dag, 80)
+scheduler.aaa()
