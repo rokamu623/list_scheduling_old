@@ -10,7 +10,7 @@ class Scheduler():
         self._sim_time = 0
 
     # pop most priory node
-    def __select_node(self, priority_queue: list[int]) -> tuple([list[int], int]):
+    def _select_node(self, priority_queue: list[int]) -> tuple([list[int], int]):
         priority_queue.sort(key=lambda x : self._dag.nodes[x].laxity)
         poped_node = priority_queue[0]
         priority_queue.pop(0)
@@ -18,7 +18,7 @@ class Scheduler():
         return priority_queue, poped_node
 
     # get fastest free core
-    def __select_core(self) -> tuple([int, int]):
+    def _select_core(self) -> tuple([int, int]):
         # find node latest finish for each core
         ft = [0 for n in range(self._core_num)]
         for c in range(self._core_num):
@@ -37,7 +37,7 @@ class Scheduler():
         self._priority_queue = [n for n in self._dag.src]
         
         while(1):
-            self._priority_queue, poped_node = self.__select_node(self._priority_queue)
+            self._priority_queue, poped_node = self._select_node(self._priority_queue)
 
             # culc release time
             if len(self._dag.predecessors(poped_node)):
@@ -45,7 +45,7 @@ class Scheduler():
             else:
                 release_time = 0
 
-            selected_core, core_avail_time = self.__select_core()
+            selected_core, core_avail_time = self._select_core()
 
             start_time = max(release_time, core_avail_time)
 

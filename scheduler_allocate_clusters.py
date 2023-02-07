@@ -1,4 +1,4 @@
-from numpy import argmin
+from numpy import argmin, array
 
 from dag import DAG, Node
 from scheduler import Scheduler
@@ -18,13 +18,13 @@ class SchedulerAllocateClusters(Scheduler):
         self._priority_queue = []
         self._sim_time = 0
 
-    def aaa(self):
-        self.__select_core()
+    def aaa(self, node: Node):
+        return self._select_core(node)
 
     # get fastest free core
-    def __select_core(self) -> tuple([int, int]):
+    def _select_core(self, node: Node) -> tuple([int, int]):
         # find node latest finish for each core
-        ft = [[0 for _ in range(CORE_NUM_IN_CLUSTER)] for _ in range(self._cluster_num)]
+        ft = [[CORE_NUM_IN_CLUSTER-_ for _ in range(CORE_NUM_IN_CLUSTER)] for _ in range(self._cluster_num)]
         for node in [node for node in self._dag.nodes if node.core is not None]:
             for cc in range(self._cluster_num):
                 for c in range(CORE_NUM_IN_CLUSTER):
@@ -32,18 +32,24 @@ class SchedulerAllocateClusters(Scheduler):
                     if core_idx in node.core and node.FT is not None and ft[cc][c] < node.FT:
                         ft[cc][c] = node.FT
 
-        # # get fastest free core
-        # selected_core = int(argmin(ft))
-        # core_avail_time = min(ft)
+        # get fastest free core
+        PARALEEL = 16 # TODO: set parallization of system model
 
-        # return selected_core, core_avail_time
+        selected_cluster_idx = argmin([sorted(f)[PARALEEL-1] for f in ft])
+        core_avail_time = min([sorted(f)[PARALEEL-1] for f in ft])
+
+        selected_cluster = ft[selected_cluster_idx]
+        core_idx_sorted = array(selected_cluster).argsort()
+        selected_core = [int(16*selected_cluster_idx+c) for c in core_idx_sorted[0:PARALEEL].tolist()]
+
+        return selected_core, core_avail_time
 
     def scheduling(self):
         # initialize by src nodes
         self._priority_queue = [n for n in self._dag.src]
         
         while(1):
-            self._priority_queue, poped_node = self.__select_node(self._priority_queue)
+            self._priority_queue, poped_node = self._select_node(self._priority_queue)
 
             # culc release time
             if len(self._dag.predecessors(poped_node)):
@@ -51,7 +57,7 @@ class SchedulerAllocateClusters(Scheduler):
             else:
                 release_time = 0
 
-            selected_core, core_avail_time = self.__select_core() # NOTE: mainly, changes are in select_core function
+            selected_core, core_avail_time = self._select_core(self._dag.nodes[poped_node]) # NOTE: mainly, changes are in select_core function
 
             start_time = max(release_time, core_avail_time)
 
@@ -85,13 +91,15 @@ class SchedulerAllocateClusters(Scheduler):
                     if len(ft) > 0:
                         self._sim_time = min(ft)
 
-dag = DAG([], [], 0)
-node0 = Node(10)
-node0.FT = 20
-node0.core = [i for i in range(16)]
-node1 = Node(20)
-node1.FT = 30
-node1.core = [i+32 for i in range(16)]
-dag._nodes = [node0, node1]
-scheduler = SchedulerAllocateClusters(dag, 80)
-scheduler.aaa()
+# dag = DAG([], [], 0)
+
+# node1 = Node(20)
+# node1.FT = 30
+# node1.core = [i+32 for i in range(16)]
+# for i in range(4):
+#     node0 = Node(10)
+#     node0.FT = 20
+#     node0.core = [16*i+j for j in range(16)]
+#     dag.nodes.append(node0)
+# scheduler = SchedulerAllocateClusters(dag, 80)
+# print(scheduler.aaa(node0))
