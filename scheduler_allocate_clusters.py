@@ -2,6 +2,7 @@ from numpy import argmin, array
 
 from dag import DAG, Node
 from scheduler import Scheduler
+from sys import maxsize
 
 from amdahl import amdahl
 
@@ -22,9 +23,9 @@ class SchedulerAllocateClusters(Scheduler):
         return self._select_core(node)
 
     # get fastest free core
-    def _select_core(self, node: Node) -> tuple([int, int]):
+    def _select_core(self, node: Node, release_time: int) -> tuple([int, int]):
         # find node latest finish for each core
-        ft = [[CORE_NUM_IN_CLUSTER-_ for _ in range(CORE_NUM_IN_CLUSTER)] for _ in range(self._cluster_num)]
+        ft = [[0 for _ in range(CORE_NUM_IN_CLUSTER)] for _ in range(self._cluster_num)]
         for node in [node for node in self._dag.nodes if node.core is not None]:
             for cc in range(self._cluster_num):
                 for c in range(CORE_NUM_IN_CLUSTER):
@@ -33,14 +34,25 @@ class SchedulerAllocateClusters(Scheduler):
                         ft[cc][c] = node.FT
 
         # get fastest free core
-        PARALEEL = 16 # TODO: set parallization of system model
+        PARALEEL = 16 # TODO: set parallization of system model (node.parallel?)
 
-        selected_cluster_idx = argmin([sorted(f)[PARALEEL-1] for f in ft])
-        core_avail_time = min([sorted(f)[PARALEEL-1] for f in ft])
+        # for each posibility of parallization
+        referece_FT = maxsize
+        for parallel in range(1, PARALEEL+1):
+            # get cluster which earlest free [parallel] cores
+            selected_cluster_idx = argmin([sorted(f)[parallel-1] for f in ft])
+            tmp_core_avail_time = min([sorted(f)[parallel-1] for f in ft])
 
-        selected_cluster = ft[selected_cluster_idx]
-        core_idx_sorted = array(selected_cluster).argsort()
-        selected_core = [int(16*selected_cluster_idx+c) for c in core_idx_sorted[0:PARALEEL].tolist()]
+            tmp_FT = max(tmp_core_avail_time, release_time) + amdahl(node.c, parallel)
+
+            if tmp_FT < referece_FT:
+                core_avail_time = tmp_core_avail_time
+                
+                selected_cluster = ft[selected_cluster_idx]
+                core_idx_sorted = array(selected_cluster).argsort()
+                selected_core = [int(16*selected_cluster_idx+c) for c in core_idx_sorted[0:parallel].tolist()]
+                
+                referece_FT = tmp_FT
 
         return selected_core, core_avail_time
 
@@ -57,13 +69,13 @@ class SchedulerAllocateClusters(Scheduler):
             else:
                 release_time = 0
 
-            selected_core, core_avail_time = self._select_core(self._dag.nodes[poped_node]) # NOTE: mainly, changes are in select_core function
+            selected_core, core_avail_time = self._select_core(self._dag.nodes[poped_node], release_time) # NOTE: mainly, changes are in select_core function
 
             start_time = max(release_time, core_avail_time)
 
             # assign scheduling info
             self._dag.nodes[poped_node].ST = start_time
-            self._dag.nodes[poped_node].FT = self._dag.nodes[poped_node].ST + amdahl(self._dag.nodes[poped_node].c, 16) # TODO: 16 -> self._dag.nodes[poped_node].core_num?
+            self._dag.nodes[poped_node].FT = self._dag.nodes[poped_node].ST + amdahl(self._dag.nodes[poped_node].c, len(selected_core))
             self._dag.nodes[poped_node].core = selected_core
 
             # if all node is scheduled, finish

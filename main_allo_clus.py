@@ -7,6 +7,7 @@ from scheduler_allocate_clusters import SchedulerAllocateClusters
 # read node, edge, deadline from yaml
 reader = YamlDagReader("./dag_sample.yaml")
 wcets, edges, deadline = reader.read()
+# wcets = [wcet*10000 for wcet in wcets]
 
 # make dag from wcets, edges, deadline
 dag = DAG(wcets, edges, deadline)
