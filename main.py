@@ -1,11 +1,11 @@
-from yaml_dag_reader import YamlDagReader
-from json_exporter import JsonExporter
+from util.yaml_dag_reader import YamlDagReader
+from util.json_exporter import JsonExporter
 
-from dag import DAG
-from scheduler import Scheduler
+from src.dag import DAG
+from src.scheduler import Scheduler
 
 # read node, edge, deadline from yaml
-reader = YamlDagReader("./dag_sample.yaml")
+reader = YamlDagReader("./DAG/dag_sample.yaml")
 wcets, edges, deadline = reader.read()
 
 # make dag from wcets, edges, deadline
@@ -32,6 +32,6 @@ print(dag.makespan)
 # display_scheduling(core_num, dag)
 print("===== json ======")
 json_exporter = JsonExporter(dag)
-json_exporter.export("dag_sample.json")
+json_exporter.export("./DAG/dag_sample.json")
 print("export json")
 

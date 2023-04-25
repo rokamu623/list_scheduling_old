@@ -1,6 +1,6 @@
-from dag import DAG, Node
+from .dag import DAG, Node
 import networkx
-from yaml_dag_reader import YamlDagReader
+from util.yaml_dag_reader import YamlDagReader
 
 class DAG_rta_fcp(DAG):
     def __init__(self, weights: list[int], edges: list[(int, int)], deadline: int):

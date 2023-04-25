@@ -1,4 +1,4 @@
-from dag import DAG
+from src.dag import DAG
 
 def display_scheduling(core_num: int, dag: DAG):
     sched = []

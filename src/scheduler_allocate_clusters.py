@@ -1,10 +1,10 @@
 from numpy import argmin, array
 
-from dag import DAG, Node
-from scheduler import Scheduler
+from .dag import DAG, Node
+from .scheduler import Scheduler
 from sys import maxsize
 
-from amdahl import amdahl
+from .amdahl import amdahl
 
 CORE_NUM_IN_CLUSTER = 16
 

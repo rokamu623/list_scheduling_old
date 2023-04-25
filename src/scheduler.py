@@ -1,6 +1,6 @@
 from numpy import argmin
 
-from dag import DAG
+from .dag import DAG
 
 class Scheduler():
     def __init__(self, dag: DAG, core_num: int):

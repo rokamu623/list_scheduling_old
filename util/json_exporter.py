@@ -1,5 +1,5 @@
 import json
-from dag import DAG
+from src.dag import DAG
 
 
 class JsonExporter():

@@ -1,11 +1,11 @@
-from yaml_dag_reader import YamlDagReader
-from json_exporter import JsonExporterAllcClus
+from util.yaml_dag_reader import YamlDagReader
+from util.json_exporter import JsonExporterAllcClus
 
-from dag import DAG
-from scheduler_allocate_clusters import SchedulerAllocateClusters
+from src.dag import DAG
+from src.scheduler_allocate_clusters import SchedulerAllocateClusters
 
 # read node, edge, deadline from yaml
-reader = YamlDagReader("./dag_sample.yaml")
+reader = YamlDagReader("./DAG/dag_sample.yaml")
 wcets, edges, deadline = reader.read()
 # wcets = [wcet*10000 for wcet in wcets]
 
@@ -33,6 +33,6 @@ print(dag.makespan)
 # display_scheduling(core_num, dag)
 print("===== json ======")
 json_exporter = JsonExporterAllcClus(dag)
-json_exporter.export("dag_sample.json")
+json_exporter.export("./DAG/dag_sample.json")
 print("export json")
 
