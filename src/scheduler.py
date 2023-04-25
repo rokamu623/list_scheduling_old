@@ -1,6 +1,10 @@
 from numpy import argmin
+from typing import Optional
 
 from .dag import DAG
+
+def value_or(n: Optional[int], i: int):
+    return n if n is not None else i
 
 class Scheduler():
     def __init__(self, dag: DAG, core_num: int):
@@ -23,7 +27,9 @@ class Scheduler():
         ft = [0 for n in range(self._core_num)]
         for c in range(self._core_num):
             for node in self._dag.nodes:
-                if node.core is not None and node.core == c and node.FT is not None and ft[c] < node.FT:
+                # if node.core == c and ft[c] < node.FT  with handle None
+                # if node.core is not None and node.core == c and node.FT is not None and ft[c] < node.FT:
+                if value_or(node.core, -1) == c and ft[c] < value_or(node.FT, 0):
                     ft[c] = node.FT
 
         # get fastest free core
@@ -62,11 +68,13 @@ class Scheduler():
             while True:
                 # listing not schediling and not in priority queue 
                 for i in [i for i in range(len(self._dag.nodes)) if self._dag.nodes[i].FT is None and i not in self._priority_queue]:
-                    append_flag = True
-                    ft = 0
                     # enqueue node which release "sim_time" (all predecessors finish until "sim_time")
+                    append_flag = True
                     for pre in [self._dag.nodes[p] for p in self._dag.predecessors(i)]:
-                        if pre.FT is None or (pre.FT is not None and pre.FT > self._sim_time):
+                        if pre.FT is None:
+                            append_flag = False
+                        # if pre.FT is not None and pre.FT > self._sim_time:
+                        if value_or(pre.FT, 0) > self._sim_time:
                             append_flag = False
                     if append_flag is True:
                         self._priority_queue.append(i)
@@ -75,6 +83,6 @@ class Scheduler():
                 if len(self._priority_queue) != 0:
                     break
                 else:
-                    ft = [n.FT for n in self._dag.nodes if n.FT is not None and n.FT > self._sim_time]
+                    ft = [n.FT for n in self._dag.nodes if value_or(n.FT, 0) > self._sim_time]
                     if len(ft) > 0:
                         self._sim_time = min(ft)
