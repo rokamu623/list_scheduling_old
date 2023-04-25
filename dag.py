@@ -8,7 +8,7 @@ class Node:
         self._ft = None
         self._st = None
         self._core = None
-        self._laxity = 0
+        self._laxity = None
         self._p = -1
 
     @property
@@ -40,7 +40,7 @@ class Node:
         self._core = n
 
     @property
-    def laxity(self) -> int:
+    def laxity(self) -> Optional[int]:
         return self._laxity
 
     @laxity.setter
@@ -103,7 +103,8 @@ class DAG:
 
     def _culc_laxity(self):
         def culc(n: int, l: int):
-            self.nodes[n].laxity = l
+            if self.nodes[n].laxity is None or self.nodes[n].laxity > l:
+                self.nodes[n].laxity = l
             for s in list(self.G.predecessors(n)):
                 culc(s, l-self.nodes[s].c)
 
