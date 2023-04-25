@@ -115,8 +115,7 @@ class DAG:
     def nodes(self):
         return self._nodes
 
-
-    def _culc_c_path(self) -> list[int]:
+    def _culc_c_path(self):
         cp = []
         length = 0
         for s in self.src:
@@ -127,4 +126,4 @@ class DAG:
                         cp = path
                         length = tmp_length
 
-        return cp
+        self._c_path = cp
